@@ -1,0 +1,136 @@
+Sjasm Z80 Assembler v0.42c - www.xl2s.tk             [2023.07.14 - 21:24:01]
+
+cargapantalla.asm
+Errors: 0
+
+       1   00:0000                      			OUTPUT 			"cargapantallaplet.rom"
+       2   00:4000                      		
+       3   00:4000                      ;;CONSTANTES
+       4   00:4000                      ;FUNCIONES BIOS
+       5   00:4000  (00:009F)           CHGET				equ		#009F	;espera a que se pulse una tecla
+       6   00:4000  (00:005C)           LDIRVM				equ		#005C	;RAM/ROM -> VRAM
+       7   00:4000  (00:007E)           SETGRP				equ		#007E		;cambia modo pantalla a SC2
+       8   00:4000  (00:0062)           CHGCLR  			equ		#0062	;cambia color de pantalla (toca A y direcciones)
+       9   00:4000  (00:F3E9)           FORCLR				equ		#F3E9	;zona memoria color foreground
+      10   00:4000  (00:F3EA)           BAKCLR  			equ		#F3EA	;zona memoria color background
+      11   00:4000  (00:F3EB)           BDRCLR 				equ		#F3EB	;zona memoria bordercolor
+      12   00:4000                      
+      13   00:4000                      ;MAPA VDP
+      14   00:4000  (00:0000)           CHRTBL				equ		#0000
+      15   00:4000  (00:1800)           TILMAP				equ		#1800
+      16   00:4000  (00:2000)           CLRTBL				equ		#2000
+      17   00:4000                      
+      18   00:4000                      			
+      19   00:4000                      ;;INICIO ROM		
+      20   00:4000                      			ORG				#4000
+      21   00:4000                      
+      22   00:4000                      
+      23   00:4000                      ;;CABECERA FICHERO ROM
+      24   00:4000  41 42               			DB 				"AB" ;#41,#42 Identificador de rom
+      25   00:4002                      			DW 				START,0,0,0,0,0,0  ;Inicio codigo. Puede ser qualquier dirección
+      25   00:4002  10 40 00 00 00 00 00 00 00 00 00 00 00 00 
+      26   00:4010                      
+      27   00:4010                      		
+      28   00:4010                      START:		
+      29   00:4010  CD 7E 00            			CALL			SETGRP
+      30   00:4013                      
+      31   00:4013                      			;cargando banco 0
+      32   00:4013                      			;cargamos los patrones
+      33   00:4013  21 78 40            			LD				HL, tiles_patrones
+      34   00:4016  11 00 00            			LD				DE, CHRTBL
+      35   00:4019  01 00 08            			LD				BC, 2048
+      36   00:401C  CD 5C 00            			CALL			LDIRVM
+      37   00:401F                      			;cargamos los colores de los patrones
+      38   00:401F  21 78 48            			LD				HL, tiles_color
+      39   00:4022  11 00 20            			LD				DE, CLRTBL
+      40   00:4025  01 00 08            			LD				BC, 2048
+      41   00:4028  CD 5C 00            			CALL			LDIRVM
+      42   00:402B                      			;cargando banco 1
+      43   00:402B                      			;cargamos los patrones
+      44   00:402B  21 78 40            			LD				HL, tiles_patrones
+      45   00:402E  11 00 08            			LD				DE, CHRTBL + #0800
+      46   00:4031  01 00 08            			LD				BC, 2048
+      47   00:4034  CD 5C 00            			CALL			LDIRVM
+      48   00:4037                      			;cargamos los colores de los patrones
+      49   00:4037  21 78 48            			LD				HL, tiles_color
+      50   00:403A  11 00 28            			LD				DE, CLRTBL + #0800
+      51   00:403D  01 00 08            			LD				BC, 2048
+      52   00:4040  CD 5C 00            			CALL			LDIRVM
+      53   00:4043                      			;cargando banco 2
+      54   00:4043                      			;cargamos los patrones
+      55   00:4043  21 78 40            			LD				HL, tiles_patrones
+      56   00:4046  11 00 10            			LD				DE, CHRTBL + #1000
+      57   00:4049  01 00 08            			LD				BC, 2048
+      58   00:404C  CD 5C 00            			CALL			LDIRVM
+      59   00:404F                      			;cargamos los colores de los patrones
+      60   00:404F  21 78 48            			LD				HL, tiles_color
+      61   00:4052  11 00 30            			LD				DE, CLRTBL + #1000
+      62   00:4055  01 00 08            			LD				BC, 2048
+      63   00:4058  CD 5C 00            			CALL			LDIRVM
+      64   00:405B                      			
+      65   00:405B                      			;CARGAMOS MAPA (EN ESTE CASO EN LOS 3 BANCOS)
+      66   00:405B  21 78 50            			LD				HL, tiles_mapa
+      67   00:405E  11 00 18            			LD				DE, TILMAP			;destino en vram
+      68   00:4061  01 00 03            			LD				BC, 768				;nº posiciones a pintar
+      69   00:4064  CD 5C 00            			CALL			LDIRVM
+      70   00:4067                      			
+      71   00:4067                      			;ESPERA A QUE SE PULSE UNA TECLA
+      72   00:4067  CD 9F 00            			CALL			CHGET
+      73   00:406A                      			
+      74   00:406A                      			;RETORNA AL BASIC
+      75   00:406A  C9                  			RET		
+      76   00:406B                      END:		
+      77   00:406B                      		
+      78   00:406B                      		
+      79   00:406B                      ;dejo esto por si me interesa cambiar color de fondo para que parezca más
+      80   00:406B                      ;al resultado final
+      81   00:406B                      color_pantalla:
+      82   00:406B  AF                  			XOR		 		 A					;color negro
+      83   00:406C  32 E9 F3            			LD				(FORCLR), A
+      84   00:406F  32 EA F3            			LD				(BAKCLR), A
+      85   00:4072  32 EB F3            			LD				(BDRCLR), A
+      86   00:4075  C3 62 00            			JP				CHGCLR
+      87   00:4078                      ;fin_color_pantalla_negro:
+      88   00:4078                      	
+      89   00:4078                      
+      90   00:4078  (0800)              tiles_patrones:				incbin "prueba.til.bin"
+      91   00:4878  (0800)              tiles_color:				incbin "prueba.col.bin"
+      92   00:5078  (0300)              tiles_mapa:					incbin "prueba.map.todo.bin"
+      93   00:5378                      
+
+    LABELS
+-------------------------------------------------
+00:0000009F   CHGET
+00:0000005C   LDIRVM
+00:0000007E   SETGRP
+00:00000062   CHGCLR
+00:0000F3E9   FORCLR
+00:0000F3EA   BAKCLR
+00:0000F3EB   BDRCLR
+00:00000000   CHRTBL
+00:00001800   TILMAP
+00:00002000   CLRTBL
+00:00004010   START
+00:0000406B X END
+00:0000406B X color_pantalla
+00:00004078   tiles_patrones
+00:00004878   tiles_color
+00:00005078   tiles_mapa
+
+
+ Output: cargapantalla.out
+-------------------------------------------------
+
+ Page: 00
+  Org: 00004000  Size: *  Used: 00000000
+
+    No output
+
+ Output: cargapantallaplet.rom
+-------------------------------------------------
+
+ Page: 00
+  Org: 00004000  Size: *  Used: 00001378
+
+   Address   Length Align   Label
+   00004000    4984         START
